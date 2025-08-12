@@ -2,14 +2,14 @@ import java.io.*;
 import java.util.*;
 
 public class CountUnbalanced {
-    public static File dataset = new File(".data/otc.txt");
-    public static ArrayList<int[]> fullFile = new ArrayList<>(); // computes whole file's data to remove rescanning
+    public static File dataset = new File(".data/wordnet.txt");
+    public static ArrayList<double[]> fullFile = new ArrayList<>(); // computes whole file's data to remove rescanning
     public static ArrayList<Integer> edgeWeights = new ArrayList<>(); // map of all edge weights, initialized to 2 each (lines 1-2)
     public static Set<Integer> uniqueVertices = new TreeSet<>(); // stores all unique vertices, removes redundant computations
 
     public static class Neighborhood { // neighbors
         public ArrayList<Integer> neighbors = new ArrayList<>(); // indexes of vertex u's neighbors
-        public ArrayList<Integer> neighborWeights = new ArrayList<>(); // edge weights between u and neighboring v's
+        public ArrayList<Double> neighborWeights = new ArrayList<>(); // edge weights between u and neighboring v's
         public HashSet<Integer> neighborSet = new HashSet<>(); // this instead of repeated arraylist.contains calls
     }
 
@@ -38,13 +38,13 @@ public class CountUnbalanced {
                 String[] data = line.trim().split("\\s+");
                 if (data.length >= 3)  { // filters out invalid arguments
 
-                    int u = Integer.parseInt(data[0]);
-                    int v = Integer.parseInt(data[1]);
-                    int sign = Integer.parseInt(data[2]);
+                    double u = Double.parseDouble(data[0]);
+                    double v = Double.parseDouble(data[1]);
+                    double sign = Double.parseDouble(data[2]);
 
-                    fullFile.add(new int[]{u, v, sign}); // add to fullFile
-                    uniqueVertices.add(u); // adds to unique map, will be skipped if not unique
-                    uniqueVertices.add(v);
+                    fullFile.add(new double[]{u, v, sign}); // add to fullFile
+                    uniqueVertices.add((int) u); // adds to unique map, will be skipped if not unique
+                    uniqueVertices.add((int) v);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -58,13 +58,13 @@ public class CountUnbalanced {
      */
     public static void buildEdgeIndexMap() {
         for (int i = 0; i < fullFile.size(); i++) { // for every edge in the dataset
-            int u = fullFile.get(i)[0];
-            int v = fullFile.get(i)[1];
+            int u = (int) fullFile.get(i)[0];
+            int v = (int) fullFile.get(i)[1];
             String key1 = u + "," + v;
             String key2 = v + "," + u; // inverses counted as potential keys
             edgeToIndex.put(key1, i); // edge indexing stored as u, v
             edgeToIndex.put(key2, i); // edge reverse indexing v, u
-            edgeWeights.add(0); // adds 0 to the edge weight (lines 1-2)
+            edgeWeights.add(0); // adds 2 to the edge weight (lines 1-2)
         }
     }
 
@@ -74,7 +74,7 @@ public class CountUnbalanced {
 
             for (int j = 0; j < u.neighbors.size(); j++) { // line 4
                 int vNode = u.neighbors.get(j); // v index
-                int uvSign = u.neighborWeights.get(j); // u v edge
+                double uvSign = u.neighborWeights.get(j); // u v edge
                 if (i < vNode && uvSign < 0) { // line 5
                     Neighborhood v = findNeighborhood(vNode); // find neighborhood of node in u's neighborhood
 
@@ -86,10 +86,10 @@ public class CountUnbalanced {
 
                     for (int k = 0; k < v.neighbors.size(); k++) { // line 8
                         int wNode = v.neighbors.get(k); // w index
-                        int vwSign = v.neighborWeights.get(k); // v w edge
+                        double vwSign = v.neighborWeights.get(k); // v w edge
                         if (wNode == i || !u.neighborSet.contains(wNode)) continue;
 
-                        int uwSign = u.neighborWeights.get(u.neighbors.indexOf(wNode)); // u w edge
+                        double uwSign = u.neighborWeights.get(u.neighbors.indexOf(wNode)); // u w edge
 
                         if (uwSign > 0 && vwSign > 0) { // line 10
                             if (wNode > vNode) { // line 11
@@ -112,15 +112,15 @@ public class CountUnbalanced {
         Neighborhood u = new Neighborhood();
 
         for (int i = 0; i < fullFile.size(); i++) { // across whole graph
-            int[] edge = fullFile.get(i);
+            double[] edge = fullFile.get(i);
             if (edge[0] == index) { // if first node in dataset is the desired one,
-                u.neighbors.add(edge[1]);
+                u.neighbors.add((int) edge[1]);
                 u.neighborWeights.add(edge[2]);
-                u.neighborSet.add(edge[1]);
+                u.neighborSet.add((int) edge[1]);
             } else if (edge[1] == index) { // unsure if I need to do the inverse
-                u.neighbors.add(edge[0]);
+                u.neighbors.add((int) edge[0]);
                 u.neighborWeights.add(edge[2]);
-                u.neighborSet.add(edge[0]);
+                u.neighborSet.add((int) edge[0]);
             }
         }
 
