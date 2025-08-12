@@ -1,8 +1,8 @@
 import java.io.*;
 import java.util.*;
 
-public class Main {
-    public static File dataset = new File(".data/slashdot.txt");
+public class CountUnbalanced {
+    public static File dataset = new File(".data/otc.txt");
     public static ArrayList<int[]> fullFile = new ArrayList<>(); // computes whole file's data to remove rescanning
     public static ArrayList<Integer> edgeWeights = new ArrayList<>(); // map of all edge weights, initialized to 2 each (lines 1-2)
     public static Set<Integer> uniqueVertices = new TreeSet<>(); // stores all unique vertices, removes redundant computations
@@ -28,7 +28,7 @@ public class Main {
             counter += edgeWeights.get(i);
         }
 
-        System.out.println("balanced triangle count: " + counter);
+        System.out.println("unbalanced triangle count: " + counter);
     }
 
     public static void processFullFile() {
@@ -64,7 +64,7 @@ public class Main {
             String key2 = v + "," + u; // inverses counted as potential keys
             edgeToIndex.put(key1, i); // edge indexing stored as u, v
             edgeToIndex.put(key2, i); // edge reverse indexing v, u
-            edgeWeights.add(2); // adds 2 to the edge weight (lines 1-2)
+            edgeWeights.add(0); // adds 0 to the edge weight (lines 1-2)
         }
     }
 
@@ -75,7 +75,7 @@ public class Main {
             for (int j = 0; j < u.neighbors.size(); j++) { // line 4
                 int vNode = u.neighbors.get(j); // v index
                 int uvSign = u.neighborWeights.get(j); // u v edge
-                if (i < vNode && uvSign == 1) { // line 5
+                if (i < vNode && uvSign < 0) { // line 5
                     Neighborhood v = findNeighborhood(vNode); // find neighborhood of node in u's neighborhood
 
                     if (u.neighbors.size() < v.neighbors.size()) { // lines 6-7
@@ -91,11 +91,11 @@ public class Main {
 
                         int uwSign = u.neighborWeights.get(u.neighbors.indexOf(wNode)); // u w edge
 
-                        if (uwSign == 1 && vwSign == 1) { // line 10
+                        if (uwSign > 0 && vwSign > 0) { // line 10
                             if (wNode > vNode) { // line 11
                                 addToEdgeWeights(i, vNode, wNode); // lines 12-14
                             }
-                        } else if (uwSign == -1 && vwSign == -1) { // line 15
+                        } else if (uwSign < 0 && vwSign < 0) { // line 15
                             addToEdgeWeights(i, vNode, wNode); // lines 16-18
                         }
                     }
