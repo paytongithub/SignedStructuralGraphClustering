@@ -12,7 +12,7 @@ public class CountEdgeWeights {
             while (reader.hasNextLine()) {
                 String line = reader.nextLine();
                 String[] data = line.trim().split("\\s+");
-                int weight = Integer.parseInt(data[2]);
+                double weight = Double.parseDouble(data[2]);
                 if (weight > 0) {
                     positive++;
                 } else {
